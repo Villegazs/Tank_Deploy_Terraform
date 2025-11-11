@@ -9,19 +9,35 @@ resource "aws_instance" "terraform" {
 
   user_data = <<-EOF
               #!/bin/bash
-              sudo apt update -y
-              sudo apt install python3-pip -y
-              pip3 install Flask==2.3.2
-              cat <<EOT >> /home/ubuntu/app.py
-              from flask import Flask
-              app = Flask(__name__)
-              @app.route("/")
-              def hello():
-                  return "Hola Mundo desde Flask en EC2!"
-              if __name__ == "__main__":
-                  app.run(host="0.0.0.0", port=80)
-              EOT
-              nohup python3 /home/ubuntu/app.py &
+              set -e
+
+              # Actualizar e instalar dependencias (Ubuntu)
+              sudo apt-get update -y
+              sudo apt-get install -y git docker.io 
+
+              # Habilitar y arrancar docker
+              sudo apt-get install -y docker-compose
+
+              # Preparar directorio del backend
+              rm -rf /home/ubuntu/backend
+              mkdir -p /home/ubuntu/backend
+              cd /home/ubuntu/backend
+
+              # Clonar el repositorio (asegúrate que la URL es la correcta)
+              git clone https://github.com/Walkhie/Backend-Robot-Oruga.git /home/ubuntu/backend
+              
+              # Entrar al directorio del proyecto
+              cd /home/ubuntu/backend || exit 1
+
+              # Limpieza segura: detener y borrar contenedores/volúmenes del compose anterior si existen
+              # usar || true para evitar que falle si no hay nada que limpiar
+              sudo docker compose down -v --rmi local --remove-orphans || true
+              sudo docker ps -aq | xargs -r sudo docker rm -f || true
+              sudo docker volume ls -q | xargs -r sudo docker volume rm || true
+              sudo docker system prune -a --volumes -f || true
+
+              # Levantar los servicios con docker compose
+              sudo docker-compose up -d --build
               EOF
 
   tags = {
@@ -34,4 +50,4 @@ resource "aws_instance" "terraform" {
 
 data "aws_security_group" "security" {
   name        = var.security_group_name
-}
+} 
