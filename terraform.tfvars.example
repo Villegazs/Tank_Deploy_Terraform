@@ -1,0 +1,16 @@
+# AWS Credentials and Configuration
+# Copy this file to terraform.tfvars and fill in your actual values
+# Never commit terraform.tfvars to version control!
+
+aws_access_key_id     = "your-access-key-id-here"
+aws_secret_access_key = "your-secret-access-key-here"
+aws_region           = "us-east-1"
+
+# Instance Configuration
+instance_name        = "Tank_Terraform_Deploy"
+instance_type        = "t3.large"
+key_name            = "your-key-pair-name"
+security_group_name = "your-security-group-name"
+
+# Optional: Specify existing instance ID if needed
+# instance_id = "i-0f5c47136adc0901d"
